@@ -1,5 +1,3 @@
-add_executable(with_lexer main.cpp
-        ../common_lib/myUtil.cpp
-        ../common_lib/myUtil.h)
+add_executable(with_lexer main.cpp)
 
 target_link_libraries(with_lexer PRIVATE common_lib)
