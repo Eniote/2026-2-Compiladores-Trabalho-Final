@@ -3,7 +3,7 @@ Implementação de um compilador para uma linguagem simplicicada
 
 ## Enunciado do trabalho
 - [x] Escolher uma LP simplificada que tenha BNF 
-  - Iremos usar [C-Minus](http://www.csci-snc.com/resources/ExamplesX/C-Syntax.pdf)
+  - Iremos usar C-Minus, a especifação da linguagem pode ser encontrada no apendice A do livro da disciplina
 - [ ] Definir um subconjunto de regras de produção (mínimo 5) para:
 - [ ] Definir ERs para cada token do subconjunto selecionado
 - [ ] Executar o processo NFA ⇾ DFA ⇾ DFA mínimo sem usar ferramenta que automatize tudo
@@ -13,7 +13,11 @@ Implementação de um compilador para uma linguagem simplicicada
 - [ ] Gerar arquivos com códigos sem erro e com erro
 - [ ] Mostrar como fica a saída com o Scanner gerado
 
-
+## Next
+- [ ] Definir todas as regras no formato do lexer
+- [ ] Escolher o subconjunto que sera usado para a parte manual
+  - O que é considerado uma regra?
+- [ ] Estudar o processo para a parte manual (tem no livro :p)
 
 
 
@@ -61,5 +65,11 @@ O Graphviz é uma ferrametne que usa arquivos .dot e uma linguagem propria para 
 
 
 ## Referencias
-- http://www2.cs.arizona.edu/~debray/Teaching/CSc453/DOCS/cminusminusspec.html
-- http://www.csci-snc.com/resources/ExamplesX/C-Syntax.pdf
+
+### Especificação do C Minus
+A especificação pode ser encontrada no apendice A do livro Compiler Construction: Principle and practices by Kenneth c. Louden
+
+### Como usar o flex
+- [Documentation](https://web.mit.edu/gnu/doc/html/flex_1.html)
+- [Part 1: Tutorial on Lex/yacc](https://youtu.be/54bo1qaHAfk)
+- [a flex manual](https://westes.github.io/flex/manual/Indices.html#Indices)
