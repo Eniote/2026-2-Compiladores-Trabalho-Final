@@ -2,7 +2,11 @@
 // Created by luanl on 2026-08-24.
 //
 
+#include <fstream>
+#include <iostream>
 #include <regex>
+
+#define COMMON_FILES_DIR "../../common_files/"
 
 using namespace std;
 
@@ -60,49 +64,79 @@ alfabeto charToAlfabeto(char c) {
     }
 }
 
-// bool compute(string tape) {
-//     int state{1}, oldState{0};
-//     int afd[8][10] = {
-//         // q0 q1 q2 q3 q4 q5 q6 q7 q8 q9
-//         { 0, 2, 0, 6, 0, 0, 6, 0, 0, 0},         // i
-//         { 0, 0, 3, 6, 0, 0, 6, 0, 0, 0},         // f
-//         { 0, 9, 0, 0, 0, 0, 0, 0, 0, 0},         // (
-//         { 0, 5, 0, 0, 0, 0, 0, 0, 0, 0},         // )
-//         { 0, 7, 0, 0, 0, 0, 0, 8, 0, 0},         // =
-//         { 0, 4, 0, 6, 4, 0, 6, 0, 0, 0},         // digito
-//         { 0, 6, 0, 6, 0, 0, 6, 0, 0, 0},         // letra
-//         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}          // blank
-//     };
-//
-//     for (char head: tape) {
-//         alfabeto a = charToAlfabeto(head);
-//         switch (a) {
-//             case I:      oldState = state; state = afd[0][state]; break;
-//             case F:      oldState = state; state = afd[1][state]; break;
-//             case OPAR_CHAR:   oldState = state; state = afd[2][state]; break;
-//             case CPAR_CHAR:   oldState = state; state = afd[3][state]; break;
-//             case EQ_CHAR:     oldState = state; state = afd[4][state]; break;
-//             case DIGIT:  oldState = state; state = afd[5][state]; break;
-//             case LETTER: oldState = state; state = afd[6][state]; break;
-//             case WHITE:  oldState = state; state = afd[7][state]; break;
-//             default: return ERROR; break;
-//         }
-//
-//         switch (oldState) {
-//             case 3: tape.begin tape.
-//             case 4:
-//             case 5:
-//             case 6:
-//             case 8:
-//             case 9:
-//         }
-//         return oldState;
-//     }
-// }
+bool compute(string tape) {
+    int state{1}, oldState{0};
+    int afd[8][10] = {
+        // q0 q1 q2 q3 q4 q5 q6 q7 q8 q9
+        { 0, 2, 0, 6, 0, 0, 6, 0, 0, 0},         // i
+        { 0, 0, 3, 6, 0, 0, 6, 0, 0, 0},         // f
+        { 0, 9, 0, 0, 0, 0, 0, 0, 0, 0},         // (
+        { 0, 5, 0, 0, 0, 0, 0, 0, 0, 0},         // )
+        { 0, 7, 0, 0, 0, 0, 0, 8, 0, 0},         // =
+        { 0, 4, 0, 6, 4, 0, 6, 0, 0, 0},         // digito
+        { 0, 6, 0, 6, 0, 0, 6, 0, 0, 0},         // letra
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}          // blank
+    };
+
+    for (char head: tape) {
+        alfabeto a = charToAlfabeto(head);
+        switch (a) {
+            case I:      oldState = state; state = afd[0][state]; break;
+            case F:      oldState = state; state = afd[1][state]; break;
+            case OPAR_CHAR:   oldState = state; state = afd[2][state]; break;
+            case CPAR_CHAR:   oldState = state; state = afd[3][state]; break;
+            case EQ_CHAR:     oldState = state; state = afd[4][state]; break;
+            case DIGIT:  oldState = state; state = afd[5][state]; break;
+            case LETTER: oldState = state; state = afd[6][state]; break;
+            case WHITE:  oldState = state; state = afd[7][state]; break;
+            default: return ERROR; break;
+        }
+
+        switch (oldState) {
+            case 3: return IF; break;
+            case 4: return NUMBER; break;
+            case 5: return CPAR; break;
+            case 6: return ID; break;
+            case 8: return EQ; break;
+            case 9: return OPAR; break;
+            default: return ERROR; break;
+        }
+    }
+}
 
 int main() {
+    string input_file = COMMON_FILES_DIR "input.txt";
+    string output_file = COMMON_FILES_DIR "output.txt";
+
+    fstream fin(input_file);
+    fstream fout(output_file);
+
+
+    if (!fin.is_open()) {
+        cerr << "Erro ao abrir o arquivo de entrada" << endl;
+
+        fin.close();
+        fout.close();
+        return 1;
+    }
+    if (!fout.is_open()) {
+        cerr << "Erro ao abrir o arquivo de saida" << endl;
+
+
+        fin.close();
+        fout.close();
+        return 1;
+    }
+
+    string line{};
+
+    while (getline(fin, line)) {
+
+    }
 
 
 
+    fin.close();
+    fout.close();
     return 0;
 }
