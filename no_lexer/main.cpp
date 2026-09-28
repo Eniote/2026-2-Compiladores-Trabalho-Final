@@ -28,7 +28,8 @@ enum token_type {
     IF,
     OPAR,
     CPAR,
-    EQ
+    EQ,
+    ERROR_T
 };
 
 //q0 é o estado de erro
@@ -42,7 +43,7 @@ bool isDigit(string c) {
     return regex_match(c, regex("[0-9]"));
 }
 
-bool isBlank(char c) {
+bool isBlank(string c) {
     return regex_match(c, regex("([ \n\t])"));
 }
 // yeap, I now realize I could've just used regex_match for the whole think
@@ -50,6 +51,7 @@ bool isBlank(char c) {
 
 
 alfabeto charToAlfabeto(char c) {
+    string s(1, c);
     switch (c) {
         case 'i': return I;
         case 'f': return F;
@@ -57,17 +59,17 @@ alfabeto charToAlfabeto(char c) {
         case ')': return CPAR_CHAR;
         case '=': return EQ_CHAR;
         default:
-            if (isLetter(c)) return LETTER;
-            if (isDigit(c)) return DIGIT;
-            if (isBlank(c)) return WHITE;
+            if (isLetter(s)) return LETTER;
+            if (isDigit(s)) return DIGIT;
+            if (isBlank(s)) return WHITE;
             return ERROR;
     }
 }
 
-bool compute(string tape) {
+token_type compute(string &tape) {
     int state{1}, oldState{0};
     int afd[8][10] = {
-        // q0 q1 q2 q3 q4 q5 q6 q7 q8 q9
+         // q0 q1 q2 q3 q4 q5 q6 q7 q8 q9
         { 0, 2, 0, 6, 0, 0, 6, 0, 0, 0},         // i
         { 0, 0, 3, 6, 0, 0, 6, 0, 0, 0},         // f
         { 0, 9, 0, 0, 0, 0, 0, 0, 0, 0},         // (
@@ -78,8 +80,8 @@ bool compute(string tape) {
         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}          // blank
     };
 
-    for (char head: tape) {
-        alfabeto a = charToAlfabeto(head);
+    do{
+        alfabeto a = charToAlfabeto(tape[0]);
         switch (a) {
             case I:      oldState = state; state = afd[0][state]; break;
             case F:      oldState = state; state = afd[1][state]; break;
@@ -89,9 +91,10 @@ bool compute(string tape) {
             case DIGIT:  oldState = state; state = afd[5][state]; break;
             case LETTER: oldState = state; state = afd[6][state]; break;
             case WHITE:  oldState = state; state = afd[7][state]; break;
-            default: return ERROR; break;
+            default: return ERROR_T; break;
         }
 
+        tape = tape.substr(1, tape.size() - 1);
         switch (oldState) {
             case 3: return IF; break;
             case 4: return NUMBER; break;
@@ -99,14 +102,14 @@ bool compute(string tape) {
             case 6: return ID; break;
             case 8: return EQ; break;
             case 9: return OPAR; break;
-            default: return ERROR; break;
+            default: return ERROR_T; break;
         }
-    }
+    }while (!tape.empty());
 }
 
 int main() {
-    string input_file = COMMON_FILES_DIR "input.txt";
-    string output_file = COMMON_FILES_DIR "output.txt";
+    string input_file = COMMON_FILES_DIR "no_l_input.txt";
+    string output_file = COMMON_FILES_DIR "no_l_output.txt";
 
     fstream fin(input_file);
     fstream fout(output_file);
@@ -131,7 +134,11 @@ int main() {
     string line{};
 
     while (getline(fin, line)) {
-
+        token_type token{};
+        do {
+            token = compute(line);
+            fout << token << endl;
+        }while (!line.empty());
     }
 
 
