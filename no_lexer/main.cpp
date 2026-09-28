@@ -81,20 +81,21 @@ token_type compute(string &tape) {
     };
 
     do{
+
         alfabeto a = charToAlfabeto(tape[0]);
         switch (a) {
-            case I:      oldState = state; state = afd[0][state]; break;
-            case F:      oldState = state; state = afd[1][state]; break;
+            case I:           oldState = state; state = afd[0][state]; break;
+            case F:           oldState = state; state = afd[1][state]; break;
             case OPAR_CHAR:   oldState = state; state = afd[2][state]; break;
             case CPAR_CHAR:   oldState = state; state = afd[3][state]; break;
             case EQ_CHAR:     oldState = state; state = afd[4][state]; break;
-            case DIGIT:  oldState = state; state = afd[5][state]; break;
-            case LETTER: oldState = state; state = afd[6][state]; break;
-            case WHITE:  oldState = state; state = afd[7][state]; break;
+            case DIGIT:       oldState = state; state = afd[5][state]; break;
+            case LETTER:      oldState = state; state = afd[6][state]; break;
+            case WHITE:       oldState = state; state = afd[7][state]; break;
             default: return ERROR_T; break;
         }
 
-        tape = tape.substr(1, tape.size() - 1);
+
         switch (oldState) {
             case 3: return IF; break;
             case 4: return NUMBER; break;
@@ -102,8 +103,9 @@ token_type compute(string &tape) {
             case 6: return ID; break;
             case 8: return EQ; break;
             case 9: return OPAR; break;
-            default: break;
+            default:  break;
         }
+        tape = tape.substr(1, tape.size() - 1);
     }while (!tape.empty());
 
 return ERROR_T;
