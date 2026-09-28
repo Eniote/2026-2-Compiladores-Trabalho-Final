@@ -23,13 +23,13 @@ enum alfabeto {
 };
 
 enum token_type {
-    NUMBER,
-    ID,
-    IF,
-    OPAR,
-    CPAR,
-    EQ,
-    ERROR_T
+    NUMBER,     // 0
+    ID,         // 1
+    IF,         // 2
+    OPAR,       // 3
+    CPAR,       // 4
+    EQ,         // 5
+    ERROR_T     // 6
 };
 
 //q0 é o estado de erro
@@ -102,9 +102,11 @@ token_type compute(string &tape) {
             case 6: return ID; break;
             case 8: return EQ; break;
             case 9: return OPAR; break;
-            default: return ERROR_T; break;
+            default: break;
         }
     }while (!tape.empty());
+
+return ERROR_T;
 }
 
 int main() {
