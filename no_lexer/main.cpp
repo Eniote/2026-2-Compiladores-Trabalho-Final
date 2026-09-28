@@ -68,6 +68,7 @@ alfabeto charToAlfabeto(char c) {
 
 token_type compute(string &tape) {
     int state{1}, oldState{0};
+    bool lastEmpty{false};
     int afd[8][10] = {
          // q0 q1 q2 q3 q4 q5 q6 q7 q8 q9
         { 0, 2, 0, 6, 0, 0, 6, 0, 0, 0},         // i
@@ -95,20 +96,22 @@ token_type compute(string &tape) {
             default: return ERROR_T; break;
         }
 
-
-        switch (oldState) {
-            case 3: return IF; break;
-            case 4: return NUMBER; break;
-            case 5: return CPAR; break;
-            case 6: return ID; break;
-            case 8: return EQ; break;
-            case 9: return OPAR; break;
-            default:  break;
+        if (state == 0) {
+            switch (oldState) {
+                case 3: return IF; break;
+                case 4: return NUMBER; break;
+                case 5: return CPAR; break;
+                case 6: return ID; break;
+                case 8: return EQ; break;
+                case 9: return OPAR; break;
+                default:  break;
+            }
         }
         tape = tape.substr(1, tape.size() - 1);
     }while (!tape.empty());
 
-return ERROR_T;
+
+    return ERROR_T;
 }
 
 int main() {
@@ -140,6 +143,7 @@ int main() {
     while (getline(fin, line)) {
         token_type token{};
         do {
+            line.append(" ");
             token = compute(line);
             fout << token << endl;
         }while (!line.empty());
