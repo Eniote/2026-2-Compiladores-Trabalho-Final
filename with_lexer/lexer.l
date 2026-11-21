@@ -1,20 +1,20 @@
 %{
 #include "myscanner.h"
 #include "config.h"
+#include "sintatico.tab.h"
 %}
 
 %%
-"else"          return ELSE;
-"if"            return IF;
-"int"           return INT;
-"return"        return RETURN;
-"void"          return VOID;
-"while"         return WHILE;
+"else"          return T_ELSE;
+"if"            return T_IF;
+"int"           return T_INT;
+"return"        return T_RETURN;
+"void"          return T_VOID;
+"while"         return T_WHILE;
 
-"<="            return LE;
-">="            return GE;
-"=="            return EQ;
-"!="            return NE;
+"<="            return T_LTE;
+"=="            return T_EQ;
+"!="            return T_NEQ;
 
 "+"             return ADD;
 "-"             return SUB;
@@ -32,8 +32,8 @@
 "{"             return LCHA;
 "}"             return RCHA;
 
-[A-z]+                  return ID;
-[0-9]+                  return NUM;
+[A-z]+                  return T_ID;
+[0-9]+                  return T_NUM;
 \/\*([ -~]|\n)*\*\/     printf("this is a comment\n");
 
 [ \n\t]         return WHITE;

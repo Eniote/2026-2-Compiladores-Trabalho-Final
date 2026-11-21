@@ -1,0 +1,4 @@
+bison -d sintatico.y
+flex lexer.l
+gcc sintatico.tab.c lex.yy.c -o analisador_cminus
+./analisador_cminus
