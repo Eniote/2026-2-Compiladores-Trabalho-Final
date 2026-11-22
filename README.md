@@ -63,6 +63,9 @@ e para orientar na configuração inicial do ambiente
 O Graphviz é uma ferrametne que usa arquivos .dot e uma linguagem propria para gerar diagramas. Daria pra usar o Graphviz na web mas preferimos deixar tudo no mesmo lugar. Nessa parte a IA foi usada para descobrir a existencia do Graphviz e auxiliar na configuração do ambiente para usa-lo local e automaticamente
 - O Chat ⇾ https://share.gemini.google/2fnpySTJOkkF
 
+### Exportação da árvore sintática em .dot (parser_ll1)
+Na questão 1 da parte 2 (analisador sintático LL(1)), a funcionalidade opcional de exportar a árvore sintática no formato .dot do Graphviz, para depois gerar uma imagem, foi feita com IA. Isso inclui os arquivos `parser_ll1/exportar_dot.h` e `parser_ll1/exportar_dot.cpp` e a opção `--dot` no `parser_ll1/main.cpp`.
+
 
 ## Referencias
 
