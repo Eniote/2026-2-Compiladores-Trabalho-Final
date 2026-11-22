@@ -274,6 +274,7 @@ Quando a pilha esvazia, a árvore está completa.
 | `tabela_ll1.h/.cpp` | (b) tabela M[A, a] e códigos de erro |
 | `analisador_sintatico.h/.cpp` | (c-ii, c-iii) pilha, entrada, passos do parse e montagem da árvore |
 | `arvore_sintatica.h/.cpp` | (c-iv) nó da árvore e impressão no terminal |
+| `exportar_dot.h/.cpp` | exportação opcional da árvore em DOT (Graphviz) |
 | `main.cpp` | leitura da expressão e chamada das etapas |
 
 ### Como executar
@@ -281,6 +282,7 @@ Quando a pilha esvazia, a árvore está completa.
 ```
 parser_ll1 "EXPRESSAO"                   analisa a expressão
 parser_ll1                               pede a expressão no terminal
+parser_ll1 --dot ARQUIVO "EXPRESSAO"     também grava a árvore em .dot (veja abaixo)
 ```
 
 **No CLion:** depois de `Reload CMake Project`, selecione a configuração `parser_ll1`. Em *Edit Configurations… → Program arguments*, coloque a expressão entre aspas, por exemplo `"2.5 * (3 + 4) ^ 2"`. Sem argumentos, o programa pede a expressão no console do Run.
@@ -399,6 +401,20 @@ E
         └── E'
             └── ε
 ```
+
+### Exportação da árvore em DOT (opcional)
+
+`parser_ll1 --dot arvore.dot "EXPRESSAO"` grava a árvore no formato do Graphviz. Para gerar a imagem:
+
+```
+dot -Tpng arvore.dot -o arvore.png
+```
+
+Não-terminais aparecem como elipses, terminais como retângulos (o `num` mostra o valor) e ε como texto.
+
+Essa funcionalidade foi feita com IA (veja a seção "Disclamer de Uso de IA" do [README principal](../README.md)).
+
+Para remover essa funcionalidade: apague `exportar_dot.h` e `exportar_dot.cpp`, tire `exportar_dot.cpp` do `CMakeLists.txt` desta pasta e, no `main.cpp`, remova o `#include "exportar_dot.h"`, o tratamento da opção `--dot` e o bloco `if (!arquivoDot.empty())` em `processarExpressao`.
 
 ## Referências
 

@@ -3,6 +3,7 @@
 // Uso:
 //   parser_ll1 "2.5 * (3 + 4) ^ 2"        analisa a expressão dada
 //   parser_ll1                            pede a expressão no terminal
+//   parser_ll1 --dot arvore.dot "1 + 2"   também grava a árvore em .dot (Graphviz)
 
 #include <algorithm>
 #include <iostream>
@@ -12,6 +13,7 @@
 #include "analisador_lexico.h"
 #include "analisador_sintatico.h"
 #include "arvore_sintatica.h"
+#include "exportar_dot.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -52,7 +54,7 @@ void imprimirErro(const std::string& tipoDoErro, int coluna, const std::string& 
 
 // Executa as três etapas pedidas para a expressão.
 // Devolve true se a expressão foi aceita.
-bool processarExpressao(const std::string& expressao) {
+bool processarExpressao(const std::string& expressao, const std::string& arquivoDot) {
     std::cout << "Expressão: " << expressao << "\n";
 
     // i. Análise léxica
@@ -77,6 +79,14 @@ bool processarExpressao(const std::string& expressao) {
     // iv. Árvore de análise sintática
     imprimirTitulo("3. Árvore de análise sintática");
     imprimirArvore(*sintatico.arvore, std::cout);
+
+    if (!arquivoDot.empty()) {
+        if (exportarArvoreDot(*sintatico.arvore, arquivoDot)) {
+            std::cout << "\nÁrvore gravada em " << arquivoDot << "\n";
+        } else {
+            std::cout << "\nNão foi possível gravar " << arquivoDot << "\n";
+        }
+    }
     return true;
 }
 
@@ -86,12 +96,22 @@ int main(int argc, char* argv[]) {
     configurarTerminalParaUtf8();
 
     std::string expressao;
+    std::string arquivoDot;
 
-    // Todos os argumentos formam a expressão,
+    // Tudo o que não for a opção --dot faz parte da expressão,
     // então  parser_ll1 2 + 3  também funciona.
     for (int i = 1; i < argc; i++) {
-        if (!expressao.empty()) expressao += " ";
-        expressao += argv[i];
+        const std::string argumento = argv[i];
+        if (argumento == "--dot") {
+            if (i + 1 >= argc) {
+                std::cout << "A opção --dot precisa do nome do arquivo.\n";
+                return 2;
+            }
+            arquivoDot = argv[++i];
+        } else {
+            if (!expressao.empty()) expressao += " ";
+            expressao += argumento;
+        }
     }
 
     // Sem expressão nos argumentos: pede uma no terminal.
@@ -100,5 +120,5 @@ int main(int argc, char* argv[]) {
         std::getline(std::cin, expressao);
     }
 
-    return processarExpressao(expressao) ? 0 : 1;
+    return processarExpressao(expressao, arquivoDot) ? 0 : 1;
 }
