@@ -3,7 +3,8 @@ add_executable(parser_ll1
         analisador_lexico.cpp
         gramatica.cpp
         tabela_ll1.cpp
-        analisador_sintatico.cpp)
+        analisador_sintatico.cpp
+        arvore_sintatica.cpp)
 
 # Os fontes têm caracteres UTF-8 (→, ε, ├, acentos).
 # O GCC/MinGW já assume UTF-8; o MSVC precisa ser avisado.

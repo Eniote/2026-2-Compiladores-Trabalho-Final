@@ -7,11 +7,20 @@
 
 namespace {
 
-std::string pilhaComoTexto(const std::vector<Simbolo>& pilha) {
+// Cada item da pilha guarda o símbolo da gramática e o nó da árvore que
+// corresponde a ele. Assim, quando um não-terminal é expandido, os filhos
+// são pendurados no nó certo; e quando um terminal é casado, o lexema é
+// gravado na folha certa. O $ do fundo da pilha não tem nó (nullptr).
+struct ItemDaPilha {
+    Simbolo simbolo;
+    NoArvore* no;
+};
+
+std::string pilhaComoTexto(const std::vector<ItemDaPilha>& pilha) {
     std::string texto;
-    for (const Simbolo& simbolo : pilha) {
+    for (const ItemDaPilha& item : pilha) {
         if (!texto.empty()) texto += " ";
-        texto += nomeDoSimbolo(simbolo);
+        texto += nomeDoSimbolo(item.simbolo);
     }
     return texto;
 }
@@ -47,7 +56,7 @@ std::string completarComEspacos(const std::string& texto, size_t largura) {
     return texto + std::string(largura > atual ? largura - atual : 0, ' ');
 }
 
-// Preenche os campos de erro do resultado.
+// Preenche os campos de erro do resultado e descarta a árvore incompleta.
 void registrarErro(ResultadoSintatico& resultado, PassoDoParse& passo,
                    int codigo, const std::string& origem, const Token& atual) {
     resultado.aceita = false;
@@ -55,6 +64,7 @@ void registrarErro(ResultadoSintatico& resultado, PassoDoParse& passo,
     resultado.colunaDoErro = atual.coluna;
     resultado.mensagemDeErro = "e" + std::to_string(codigo) + ": " + descricaoDoErro(codigo) +
                                " (encontrado: " + descreverToken(atual) + ")";
+    resultado.arvore.reset();
 
     passo.acao = "ERRO e" + std::to_string(codigo) + " — " + origem;
     resultado.passos.push_back(passo);
@@ -63,17 +73,21 @@ void registrarErro(ResultadoSintatico& resultado, PassoDoParse& passo,
 } // namespace
 
 ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
-    ResultadoSintatico resultado{false, {}, 0, "", 0};
+    ResultadoSintatico resultado{false, {}, nullptr, 0, "", 0};
+
+    // A raiz da árvore é o símbolo inicial E.
+    resultado.arvore = std::make_unique<NoArvore>();
+    resultado.arvore->rotulo = nomeDoNaoTerminal(NaoTerminal::E);
 
     // Configuração inicial: pilha = $ E, entrada = w $
-    std::vector<Simbolo> pilha;
-    pilha.push_back(simboloTerminal(TipoToken::FIM));
-    pilha.push_back(simboloNaoTerminal(NaoTerminal::E));
+    std::vector<ItemDaPilha> pilha;
+    pilha.push_back({simboloTerminal(TipoToken::FIM), nullptr});
+    pilha.push_back({simboloNaoTerminal(NaoTerminal::E), resultado.arvore.get()});
 
     size_t posicao = 0;  // índice do lookahead (próximo token não consumido)
 
     while (true) {
-        const Simbolo topo = pilha.back();
+        const ItemDaPilha topo = pilha.back();
         const Token& lookahead = tokens[posicao];
 
         PassoDoParse passo{static_cast<int>(resultado.passos.size()) + 1,
@@ -81,12 +95,12 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
                            entradaComoTexto(tokens, posicao),
                            ""};
 
-        if (topo.ehTerminal) {
+        if (topo.simbolo.ehTerminal) {
             // ---------------------------------------------------------------
             // Caso 1: topo da pilha é terminal (ou $).
             // Ele precisa ser igual ao lookahead.
             // ---------------------------------------------------------------
-            if (topo.terminal == lookahead.tipo) {
+            if (topo.simbolo.terminal == lookahead.tipo) {
                 if (lookahead.tipo == TipoToken::FIM) {
                     // Pilha = $ e entrada = $: a expressão foi reconhecida.
                     passo.acao = "ACEITA";
@@ -101,6 +115,7 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
                 }
                 resultado.passos.push_back(passo);
 
+                topo.no->lexema = lookahead.lexema;
                 pilha.pop_back();
                 posicao++;
                 continue;
@@ -110,11 +125,11 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
             // Nesta gramática só ')' e '$' podem chegar a esta situação, porque
             // todos os outros terminais (+ - * / ^ ( num) só são empilhados quando
             // a produção foi escolhida justamente por eles serem o lookahead.
-            const int codigo = (topo.terminal == TipoToken::FECHA_PAR)
+            const int codigo = (topo.simbolo.terminal == TipoToken::FECHA_PAR)
                                ? ERRO_PARENTESE_NAO_FECHADO
                                : ERRO_SIMBOLO_EXCEDENTE;
             registrarErro(resultado, passo, codigo,
-                          "topo '" + nomeDoSimbolo(topo) + "' ≠ entrada '" +
+                          "topo '" + nomeDoSimbolo(topo.simbolo) + "' ≠ entrada '" +
                           simboloDoTerminal(lookahead.tipo) + "'",
                           lookahead);
             return resultado;
@@ -124,8 +139,8 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
         // Caso 2: topo da pilha é não-terminal A.
         // Consulta M[A, lookahead] para decidir qual produção usar.
         // -------------------------------------------------------------------
-        const EntradaTabela entrada = consultarTabela(topo.naoTerminal, lookahead.tipo);
-        const std::string celula = "M[" + nomeDoSimbolo(topo) + ", " +
+        const EntradaTabela entrada = consultarTabela(topo.simbolo.naoTerminal, lookahead.tipo);
+        const std::string celula = "M[" + nomeDoSimbolo(topo.simbolo) + ", " +
                                    simboloDoTerminal(lookahead.tipo) + "]";
 
         if (entrada.tipo == TipoEntrada::ERRO) {
@@ -138,13 +153,23 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
         resultado.passos.push_back(passo);
 
         // Substitui A pelo lado direito da produção.
-        // Em A → ε nada é empilhado.
         pilha.pop_back();
 
-        // Empilha da direita para a esquerda, para que o símbolo mais
+        if (producao.ladoDireito.empty()) {
+            // A → ε: nada é empilhado; na árvore, A ganha uma folha ε.
+            topo.no->adicionarFilho("ε");
+            continue;
+        }
+
+        // Cria os filhos na ordem da esquerda para a direita...
+        std::vector<NoArvore*> nosDosFilhos;
+        for (const Simbolo& simbolo : producao.ladoDireito) {
+            nosDosFilhos.push_back(topo.no->adicionarFilho(nomeDoSimbolo(simbolo)));
+        }
+        // ...mas empilha da direita para a esquerda, para que o símbolo mais
         // à esquerda fique no topo e seja processado primeiro.
         for (size_t i = producao.ladoDireito.size(); i-- > 0;) {
-            pilha.push_back(producao.ladoDireito[i]);
+            pilha.push_back({producao.ladoDireito[i], nosDosFilhos[i]});
         }
     }
 }

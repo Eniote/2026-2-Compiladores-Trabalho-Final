@@ -11,6 +11,7 @@
 
 #include "analisador_lexico.h"
 #include "analisador_sintatico.h"
+#include "arvore_sintatica.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -49,7 +50,7 @@ void imprimirErro(const std::string& tipoDoErro, int coluna, const std::string& 
     std::cout << "\n" << tipoDoErro << " na coluna " << coluna << ": " << mensagem << "\n";
 }
 
-// Executa as etapas pedidas para a expressão.
+// Executa as três etapas pedidas para a expressão.
 // Devolve true se a expressão foi aceita.
 bool processarExpressao(const std::string& expressao) {
     std::cout << "Expressão: " << expressao << "\n";
@@ -72,6 +73,10 @@ bool processarExpressao(const std::string& expressao) {
         return false;
     }
     std::cout << "\nResultado: expressão ACEITA.\n";
+
+    // iv. Árvore de análise sintática
+    imprimirTitulo("3. Árvore de análise sintática");
+    imprimirArvore(*sintatico.arvore, std::cout);
     return true;
 }
 

@@ -1,10 +1,12 @@
 #ifndef PARSER_LL1_ANALISADOR_SINTATICO_H
 #define PARSER_LL1_ANALISADOR_SINTATICO_H
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "arvore_sintatica.h"
 #include "token.h"
 
 // Uma linha da tabela de passos do parse.
@@ -18,6 +20,7 @@ struct PassoDoParse {
 struct ResultadoSintatico {
     bool aceita;
     std::vector<PassoDoParse> passos;
+    std::unique_ptr<NoArvore> arvore;  // árvore completa; nula se houve erro
     int codigoDoErro;                  // 0 quando a expressão é aceita
     std::string mensagemDeErro;
     int colunaDoErro;
