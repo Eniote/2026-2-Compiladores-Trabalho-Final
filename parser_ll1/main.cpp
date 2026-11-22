@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "analisador_lexico.h"
+#include "analisador_sintatico.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -61,6 +62,16 @@ bool processarExpressao(const std::string& expressao) {
         imprimirErro("Erro léxico", lexico.colunaDoErro, lexico.mensagemDeErro);
         return false;
     }
+
+    // ii e iii. Análise sintática LL(1) mostrando pilha, entrada e ação
+    imprimirTitulo("2. Análise sintática LL(1)");
+    const ResultadoSintatico sintatico = analisarSintaticamente(lexico.tokens);
+    imprimirPassos(sintatico.passos, std::cout);
+    if (!sintatico.aceita) {
+        imprimirErro("Erro sintático", sintatico.colunaDoErro, sintatico.mensagemDeErro);
+        return false;
+    }
+    std::cout << "\nResultado: expressão ACEITA.\n";
     return true;
 }
 
