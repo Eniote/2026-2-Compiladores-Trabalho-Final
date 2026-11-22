@@ -18,6 +18,7 @@ struct PassoDoParse {
 struct ResultadoSintatico {
     bool aceita;
     std::vector<PassoDoParse> passos;
+    int codigoDoErro;                  // 0 quando a expressão é aceita
     std::string mensagemDeErro;
     int colunaDoErro;
 };

@@ -49,19 +49,21 @@ std::string completarComEspacos(const std::string& texto, size_t largura) {
 
 // Preenche os campos de erro do resultado.
 void registrarErro(ResultadoSintatico& resultado, PassoDoParse& passo,
-                   const std::string& origem, const Token& atual) {
+                   int codigo, const std::string& origem, const Token& atual) {
     resultado.aceita = false;
+    resultado.codigoDoErro = codigo;
     resultado.colunaDoErro = atual.coluna;
-    resultado.mensagemDeErro = "token inesperado (encontrado: " + descreverToken(atual) + ")";
+    resultado.mensagemDeErro = "e" + std::to_string(codigo) + ": " + descricaoDoErro(codigo) +
+                               " (encontrado: " + descreverToken(atual) + ")";
 
-    passo.acao = "ERRO — " + origem;
+    passo.acao = "ERRO e" + std::to_string(codigo) + " — " + origem;
     resultado.passos.push_back(passo);
 }
 
 } // namespace
 
 ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
-    ResultadoSintatico resultado{false, {}, "", 0};
+    ResultadoSintatico resultado{false, {}, 0, "", 0};
 
     // Configuração inicial: pilha = $ E, entrada = w $
     std::vector<Simbolo> pilha;
@@ -105,7 +107,13 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
             }
 
             // Terminal no topo diferente do lookahead.
-            registrarErro(resultado, passo,
+            // Nesta gramática só ')' e '$' podem chegar a esta situação, porque
+            // todos os outros terminais (+ - * / ^ ( num) só são empilhados quando
+            // a produção foi escolhida justamente por eles serem o lookahead.
+            const int codigo = (topo.terminal == TipoToken::FECHA_PAR)
+                               ? ERRO_PARENTESE_NAO_FECHADO
+                               : ERRO_SIMBOLO_EXCEDENTE;
+            registrarErro(resultado, passo, codigo,
                           "topo '" + nomeDoSimbolo(topo) + "' ≠ entrada '" +
                           simboloDoTerminal(lookahead.tipo) + "'",
                           lookahead);
@@ -121,7 +129,7 @@ ResultadoSintatico analisarSintaticamente(const std::vector<Token>& tokens) {
                                    simboloDoTerminal(lookahead.tipo) + "]";
 
         if (entrada.tipo == TipoEntrada::ERRO) {
-            registrarErro(resultado, passo, celula + " vazia", lookahead);
+            registrarErro(resultado, passo, entrada.numero, celula, lookahead);
             return resultado;
         }
 
