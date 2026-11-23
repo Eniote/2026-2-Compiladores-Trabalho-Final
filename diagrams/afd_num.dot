@@ -1,0 +1,15 @@
+// AFD do token num da Questão 1 (parser_ll1)
+// num = digito+ ( '.' digito+ )?
+digraph AFD_num {
+    rankdir=LR;
+    node [shape = doublecircle]; q1; q3;
+    node [shape = circle];
+    inicio [shape = none, label=""];
+
+    inicio -> q0;
+    q0 -> q1 [label="0-9"];
+    q1 -> q1 [label="0-9"];
+    q1 -> q2 [label="'.'"];
+    q2 -> q3 [label="0-9"];
+    q3 -> q3 [label="0-9"];
+}
